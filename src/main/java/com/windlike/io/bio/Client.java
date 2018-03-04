@@ -1,11 +1,14 @@
 package com.windlike.io.bio;
 
+import com.koloboke.collect.IntIterator;
+import com.koloboke.collect.set.hash.HashIntSet;
 import com.windlike.io.vo.BrandTransferVo;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,7 +28,7 @@ public class Client {
             e.printStackTrace();
         }
 
-        init();
+//        init();
     }
 
     public void init(){
@@ -37,6 +40,35 @@ public class Client {
                 brand.addUser(j, j);
             }
             brandList.add(brand);
+        }
+    }
+
+    public void send(Protocol.MsgType msgType, Object payload) throws IOException {
+        long t1 = System.currentTimeMillis();
+        try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+            output.writeByte(msgType.ordinal());//header
+            if(msgType == Protocol.MsgType.START){
+                //empty
+            }else if(msgType == Protocol.MsgType.QUERY_FIRST_ORDER){
+                HashIntSet userIdSet = (HashIntSet) payload;
+                output.writeInt(userIdSet.size());
+                IntIterator iter = userIdSet.iterator();
+                while(iter.hasNext()){
+                    output.writeInt(iter.nextInt());
+                }
+            }
+
+            output.flush();
+            System.out.println("发送完毕.msgType:" + msgType.name() + ",time:" + (System.currentTimeMillis() - t1));
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        } finally {
+            try {
+                if(socket != null) socket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

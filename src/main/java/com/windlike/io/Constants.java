@@ -28,6 +28,18 @@ public class Constants {
 
     public final static int VALID_CANDIDATE_NUM = 200;
 
+    public final static int K = 40;
+
+    public final static int MACHINE = 3;
+
+    public final static int SERVER_LISTENING_PORT = 8085;
+
+    public final static String SLAVE_IP_1 = "10.191.24.12";
+
+    public final static String SLAVE_IP_2 = "10.191.24.13";
+
+    public final static String MASTER_IP = "10.191.24.11";
+
     public static void main(String[] args) {
         long actPlatform = 80681688899415834L;
         System.out.println(Platforms.indexToFullName((byte) (actPlatform & 3)));

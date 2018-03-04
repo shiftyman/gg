@@ -53,9 +53,47 @@ public class TopKComputer {
         return result;
     }
 
+    public static ActivityVo[] computeTopKAfterMerge(HashLongObjMap<ActivityVo> activityMap, int k){
+
+        ActivityVo[] hval = new ActivityVo[k];
+        int i = 0;
+        MinHeap<ActivityVo> heap = null;
+        for (ActivityVo activityVo : activityMap.values()){
+            if(activityVo.getMergeNum() == Constants.MACHINE){
+                if(i < k){//前40个元素，先建堆
+                    hval[i] = activityVo;
+                    if(i == k - 1){
+                        heap = new MinHeap<>(hval);//建堆
+                    }
+                    i++;//有效才++
+                }else{
+                    ActivityVo root = heap.getRoot();
+
+                    // 当数据大于堆中最小的数（根节点）时，替换堆中的根节点，再转换成堆
+                    if(activityVo.compareTo(root) > 0)//相等也舍弃，因为最后多路归并后末尾元素还存在且有连续排位相同的概率很低
+                    {
+                        //有效数据才有资格进入堆中
+                        heap.setRoot(activityVo);
+                        heap.heapify(0);
+                    }
+                }
+            }
+        }
+
+        ActivityVo[] result = new ActivityVo[k];
+        int j = k-1;
+        ActivityVo min;
+        while((min = heap.removeMin()) != null){
+            result[j] = min;
+            j--;
+        }
+
+        return result;
+    }
+
     public static HashLongObjMap<ActivityVo> compressActivityMap(HashLongObjMap<ActivityVo> activityMap){
         ActivityVo[] activityVos = TopKComputer.computeTopK(activityMap, Constants.VALID_CANDIDATE_NUM);
-        HashLongObjMap<ActivityVo> s2ActivityMap = HashLongObjMaps.newUpdatableMap(Constants.VALID_CANDIDATE_NUM);
+        HashLongObjMap<ActivityVo> s2ActivityMap = HashLongObjMaps.newUpdatableMap(Constants.VALID_CANDIDATE_NUM * 2);
         for (ActivityVo activity : activityVos) {
             s2ActivityMap.put(activity.getActPlatfrom(), activity);
         }
@@ -63,7 +101,7 @@ public class TopKComputer {
     }
 
     public static HashLongObjMap<HashLongSet> compressBrandMap(HashLongObjMap<HashLongSet> brandMap, HashLongObjMap<ActivityVo> activityMap){
-        HashLongObjMap<HashLongSet> s2brandMap = HashLongObjMaps.newUpdatableMap(Constants.VALID_CANDIDATE_NUM * 30);
+        HashLongObjMap<HashLongSet> s2brandMap = HashLongObjMaps.newUpdatableMap(Constants.VALID_CANDIDATE_NUM * 50);
         brandMap.cursor().forEachForward((brandkey, brandActs)->{
             byte platform = (byte) (brandkey & 3);
             HashLongSet newBrandActs = HashLongSets.newUpdatableSet(16);

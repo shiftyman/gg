@@ -62,9 +62,6 @@ public class ActivityVo implements Comparable<ActivityVo>, Cloneable{
         this.allNum += vo.getAllNum();
         userNumMap.cursor().forEachForward((k, v)->this.userNumMap.addValue(k, v));
         mergeNum ++;
-
-
-        userNumMap.get(1);
     }
 
 //    public HashIntSet getBrandIdSet() {
